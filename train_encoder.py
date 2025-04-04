@@ -15,6 +15,7 @@ from utils.utilities_dataset import create_dataset, ToTensor, FramesDataset
 from torch.utils.data import DataLoader
 import numpy as np
 import argparse
+from tqdm import tqdm
 
 parser = argparse.ArgumentParser(description='Train the model')
 parser.add_argument('--num_samples', type=int, help='number of samples in the dataset', required=False)
@@ -126,16 +127,14 @@ decoder.to(device)
 
 # Train the model
 
-for i in range(num_training_updates):
-    for i_batch, sample_batched in enumerate(dataloader):
-        
-        #The input tensor is of shape (B,2,160,360)
-        input_tensor = torch.cat((sample_batched['curr'], sample_batched['next']), dim = 1)
-        input_tensor = input_tensor.to(device)
-        data = 1-input_tensor
+for epoch in tqdm(range(num_training_updates), desc="Training epochs"):
+    batch_iterator = tqdm(enumerate(dataloader), total=len(dataloader), leave=False, desc=f"Epoch {epoch+1}", mininterval=0.5)
+    
+    for i_batch, sample_batched in batch_iterator:
+        input_tensor = torch.cat((sample_batched['curr'], sample_batched['next']), dim=1).to(device)
+        data = 1 - input_tensor
         optimizer.zero_grad()
 
-        #The output of the encoder is of shape (B,embedding_dim,2,4)
         z_e = encoder(data)
         vq_loss, quantized, perplexity, _ = quantizer(z_e, reset)
         data_recon = decoder(quantized) 
@@ -143,26 +142,28 @@ for i in range(num_training_updates):
         loss = recon_error + vq_loss
         loss.backward()
         optimizer.step()
+
         train_res_recon_error.append(recon_error.item())
         train_res_perplexity.append(perplexity.item())
         reset = False
-        
-        #Print the loss every 100 iterations
-        if (i_batch+1) % 100 == 0:
-            print('%d iterations' % (i+1))
-            print('recon_error: %.5f' % np.mean(train_res_recon_error[-100:]))
-            print('perplexity: %.5f' % np.mean(train_res_perplexity[-100:]))
-            print()
-            reset = True #Reset the unused codewords every 100 iteroations
 
+        # Update progress bar display
+        batch_iterator.set_postfix({
+            'recon_error': f"{recon_error.item():.4f}",
+            'perplexity': f"{perplexity.item():.4f}"
+        })
+
+        if (i_batch + 1) % 100 == 0:
             writer.add_scalar('Loss/train', np.mean(train_res_recon_error[-100:]), time_step)
             writer.add_scalar('Perplexity/batch', np.mean(train_res_perplexity[-100:]), time_step)
             time_step += 1
-            
-            torch.save(quantizer.state_dict(), '../models/quantizer_'+str(num_embeddings)+'_training.pt')
+            reset = True
+
+            torch.save(quantizer.state_dict(), f'../models/quantizer_{num_embeddings}_training.pt')
             if retrain:
                 torch.save(encoder.state_dict(), '../models/encoder_training.pt')
                 torch.save(decoder.state_dict(), '../models/decoder_training.pt')
+
 
 
 torch.save(quantizer.state_dict(), '../models/quantizer_'+str(num_embeddings)+'.pt')
