@@ -9,6 +9,7 @@ from itertools import count
 from collections import namedtuple, deque
 from torch.distributions import Categorical
 import torch.nn.functional as F
+from tqdm import trange
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -74,9 +75,9 @@ def rl_training_loop(env: gym.Env,
     exploration_profile = exp_p(num_episodes, exp_frac)
     optimizer = torch.optim.Adam(dqn.parameters(), lr=1e-4)
 
-    for episode_num in range(num_episodes):
+    for episode_num in trange(num_episodes, desc="Training episodes"):
         # Reset the environment and get the initial state
-        _ = env.reset(seed = episode_num)
+        _ = env.reset(seed=episode_num)
         epsilon = exploration_profile[episode_num]
         score = 0
         done = False
@@ -86,10 +87,10 @@ def rl_training_loop(env: gym.Env,
         prev_screen = None
         state_received, curr_screen = sensor(env, prev_screen)
         state_received = state_received.detach()
+
         while not done:
-            
             states.append(state_received)
-            input_state = torch.cat(states,0)
+            input_state = torch.cat(states, 0)
 
             action, _ = choose_action_epsilon_greedy(dqn, [input_state], epsilon)
             _, _, done, _, _ = env.step(action)
@@ -98,36 +99,32 @@ def rl_training_loop(env: gym.Env,
             r2 = (env.theta_threshold_radians - abs(theta)) / env.theta_threshold_radians - 0.5
             reward = r1 + r2
 
-            score += 1      
+            score += 1
 
             next_state_received, prev_screen = sensor(env, prev_screen)
             next_state_received = next_state_received.detach()
-            if done: # if the pole has fallen down 
+            if done:
                 reward = 0
                 next_state_received = None
-            # Update the replay memory
-            episode.add_transition(state_received, action, reward, next_state_received, done)
 
+            episode.add_transition(state_received, action, reward, next_state_received, done)
             state_received = next_state_received
 
-            # Update the network
-            if len(memory) > batch_size: # we enable the training only if we have enough samples in the replay memory, otherwise the training will use the same samples too often
+            if len(memory) > batch_size:
                 loss = update_step_rec(dqn, dqn_target, memory, gamma, optimizer, loss_fn, batch_size)
                 losses.append(loss)
 
-        # Update the target network every target_net_update_steps episodes  
         memory.add(episode)
-        
+
         if episode_num % target_net_update_steps == 0:
-            #dqn_target.load_state_dict(dqn.state_dict()) 
             for name, param in dqn_target.named_parameters():
-                param.data = beta*param.data + (1-beta)*dqn.state_dict()[name]
-        # Print the final score
+                param.data = beta * param.data + (1 - beta) * dqn.state_dict()[name]
+
         writer.add_scalar('Performance/Score', score, episode_num)
         writer.add_scalar('Strategy/Epsilon', epsilon, episode_num)
         writer.add_scalar('Loss/train', np.mean(losses), episode_num)
 
-    return dqn     
+    return dqn
 
 
 def update_step_rec(dqn,dqn_target, memory: Memory,gamma,optimizer,loss_fn,batch_size):
