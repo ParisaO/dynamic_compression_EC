@@ -65,7 +65,7 @@ This command will train a policy using the `quantizer_64.pt` as the quantizer at
 To train a regressor at the receiver to recontruct the physical state of the system, the script `train_regerssor.py` can be used as follows
 
 ```
-python train_regeressor.py --num_codewords 64
+python train_regressor.py --num_codewords 64
 ```
 This will train and save an object of type `PhysicalValueRegressor` which implements Pytorch RNN. 
 
