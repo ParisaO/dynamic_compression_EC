@@ -18,7 +18,7 @@ if args.retrain: retrain = args.retrain
 from tqdm import tqdm
 
 if retrain:
-    latent_dim = 64
+    latent_dim = 64 * 8
     quantization_levels = 7
     sensor_policy = RecA2C(latent_dim+1, latent_dim, quantization_levels)
 
