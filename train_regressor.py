@@ -22,7 +22,7 @@ else:
 print('using '+device)
 
 num_codewords = 64
-embedding_dim = 8
+embedding_dim = 64
 batch_size = 256
 num_episodes = 20000
 exploring = 0.2
