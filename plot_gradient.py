@@ -22,7 +22,7 @@ if retrain:
     quantization_levels = 7
     sensor_policy = RecA2C(latent_dim+1, latent_dim, quantization_levels)
 
-    name = '../models/sensor_level_A_a2c_1.0_train.pt'
+    name = '../models/sensor_level_A_a2c_0.1_train.pt'
     env = gym.make('CartPole-v1',render_mode='rgb_array')
 
     sensor_policy.load_state_dict(torch.load(name, map_location=torch.device('cpu')).state_dict())
