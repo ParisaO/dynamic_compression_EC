@@ -46,17 +46,18 @@ if retrain:
 
     true_states = np.concatenate(true_states, 0)
 
-    np.save('../save_numpy/true_states_500_level_A.npy', true_states)
-    np.save('../save_numpy/action_agent_500_level_A.npy', np.array(agent_actions))
-    np.save('../save_numpy/values_agent_500_level_A.npy', np.array(agent_values))
-    np.save('../save_numpy/action_sensor_500_level_A.npy', np.array(sensor_actions))
-    np.save('../save_numpy/values_sensor_500_level_A.npy', np.array(sensor_values))
+    np.save(os.path.join(save_path, 'true_states_500_level_A.npy'), true_states)
+    np.save(os.path.join(save_path, 'action_agent_500_level_A.npy'), np.array(agent_actions))
+    np.save(os.path.join(save_path, 'values_agent_500_level_A.npy'), np.array(agent_values))
+    np.save(os.path.join(save_path, 'action_sensor_500_level_A.npy'), np.array(sensor_actions))
+    np.save(os.path.join(save_path, 'values_sensor_500_level_A.npy'), np.array(sensor_values))
 
-true_states = np.load('../save_numpy/true_states_500_level_A.npy')
-agent_actions = np.load('../save_numpy/action_agent_500_level_A.npy')
-sensor_actions = np.load('../save_numpy/action_sensor_500_level_A.npy')
-agent_values = np.load('../save_numpy/values_agent_500_level_A.npy')
-sensor_values = np.load('../save_numpy/values_sensor_500_level_A.npy')
+true_states = np.load(os.path.join(save_path, 'true_states_500_level_A.npy'))
+agent_actions = np.load(os.path.join(save_path, 'action_agent_500_level_A.npy'))
+sensor_actions = np.load(os.path.join(save_path, 'values_agent_500_level_A.npy'))
+agent_values = np.load(os.path.join(save_path, 'action_sensor_500_level_A.npy'))
+sensor_values = np.load(os.path.join(save_path, 'values_sensor_500_level_A.npy'))
+
 
 x = true_states[:,0]
 x_dot = true_states[:,1]
