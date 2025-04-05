@@ -17,7 +17,7 @@ import torch.nn.functional as F
 
 
 env = gym.make("CartPole-v1", render_mode = 'rgb_array')
-embedding_dim = 8
+embedding_dim = 64
 num_f = 8
 latent_dim = embedding_dim*num_f
 agent_policy = RecA2C(latent_dim,latent_dim,env.action_space.n)
