@@ -5,6 +5,8 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 import argparse
+import os
+import tikzplotlib
 
 save_path = os.path.join(os.getcwd(), 'save_numpy')
 os.makedirs(save_path, exist_ok=True)
@@ -45,6 +47,7 @@ if retrain:
     assert len(agent_actions) == len(sensor_actions)
 
     true_states = np.concatenate(true_states, 0)
+
 
     np.save(os.path.join(save_path, 'true_states_500_level_A.npy'), true_states)
     np.save(os.path.join(save_path, 'action_agent_500_level_A.npy'), np.array(agent_actions))
@@ -117,7 +120,8 @@ print(sample)
 plt.figure()
 #plt.subplot(2,2,1)
 a = action_matrix/(counter +1e-10)
-a = a*np.log(np.e*(counter>0))
+# a = a*np.log(np.e*(counter>0))    #ERROR
+a = a * np.log(np.e * np.where(counter > 0, counter, 1))
 plt.imshow(a, extent=[y_min, y_max, x_min, x_max], aspect="auto", interpolation='gaussian')
 plt.ylabel('Cart velocity')
 plt.xlabel('Angle')
@@ -125,23 +129,23 @@ plt.title('Control Actions')
 
 plt.colorbar()
 
-import tikzplotlib
-tikzplotlib.save("../figures/control_actions_pos_vs_angle_C.tex")
 
-#plt.savefig('../figures/control_actions_pos_vs_angle.pdf')
+
+tikzplotlib.save(os.path.join(figures_path, "control_actions_pos_vs_angle_C.tex"))
+plt.show()
 
 plt.figure()
 #plt.subplot(2,2,2)
-qq = (q_matrix/(counter +1e-10))*np.log(np.e*(counter>0))
+# qq = (q_matrix/(counter +1e-10))*np.log(np.e*(counter>0)) #ERROR
+qq = np.where(counter > 0, (q_matrix / (counter + 1e-10)) * np.log(np.e * counter), 0)
 plt.imshow(qq, interpolation='gaussian', extent=[y_min, y_max, x_min, x_max], aspect="auto", vmin=0, vmax=6)
 plt.ylabel('Cart velocity')
 plt.xlabel('Angle')
 plt.colorbar()
 plt.title('Average Bits per Feature')
 
-#plt.savefig('../figures/bits_per_feature_pos_vs_angle.pdf')
-
-tikzplotlib.save('../figures/bits_per_feature_pos_vs_angle_C.tex')
+tikzplotlib.save(os.path.join(figures_path, 'bits_per_feature_pos_vs_angle_C.tex'))
+plt.show()
 
 plt.figure()
 #plt.subplot(2,2,3)
@@ -154,8 +158,8 @@ plt.xlabel('Angle')
 plt.colorbar()
 plt.title('Policy Entropy')
 
-#plt.savefig('../figures/policy_entropy_pos_vs_angle.pdf')
-tikzplotlib.save('../figures/policy_entropy_pos_vs_angle_C.tex')
+tikzplotlib.save(os.path.join(figures_path, 'policy_entropy_pos_vs_angle_C.tex'))
+plt.show()
 
 #plt.subplot(2,2,4)
 #plt.imshow(q_v_matrix/counter, interpolation='gaussian', extent=[y_min, y_max, x_max, x_min], aspect="auto")
@@ -216,7 +220,8 @@ print(action_matrix)
 plt.figure()
 #plt.subplot(2,2,1)
 a = action_matrix/(counter +1e-10)
-a = a*np.log(np.e*(counter>0))
+# a = a*np.log(np.e*(counter>0))  #ERROR
+a = np.where(counter > 0, a * np.log(np.e * counter), 0)
 plt.imshow(a, extent=[y_min, y_max, x_min, x_max], aspect="auto")
 plt.ylabel('Pole Angular Velocity')
 plt.xlabel('Angle')
@@ -224,8 +229,8 @@ plt.title('Control Actions')
 
 plt.colorbar()
 
-#plt.savefig('../figures/control_actions_omega_vs_angle.pdf')
-tikzplotlib.save('../figures/control_actions_omega_vs_angle_C.tex')
+tikzplotlib.save(os.path.join(figures_path, 'control_actions_omega_vs_angle_C.tex'))
+plt.show()
 
 plt.figure()
 #plt.subplot(2,2,2)
@@ -236,16 +241,16 @@ plt.xlabel('Angle')
 plt.colorbar()
 plt.title('Average Bits per Feature')
 
-
-tikzplotlib.save('../figures/bits_per_feature_omega_vs_angle_C.tex')
+tikzplotlib.save(os.path.join(figures_path, 'bits_per_feature_omega_vs_angle_C.tex'))
 
 plt.margins(0,0)
+plt.show()
 
-#plt.savefig('../figures/bits_per_feature_omega_vs_angle.png')
 
 plt.figure()
 #plt.subplot(2,2,3)
-entropy = - a*np.log(a+1e-10) - (1-a)*np.log(1-a +1e-10)
+# entropy = - a*np.log(a+1e-10) - (1-a)*np.log(1-a +1e-10)
+entropy = - a * np.log(a + 1e-10) - (1 - a) * np.log(1 - a + 1e-10)
 entropy =entropy/entropy.max()
 
 plt.imshow(entropy, extent=[y_min, y_max, x_min, x_max], aspect="auto",  interpolation='gaussian')
@@ -254,8 +259,8 @@ plt.xlabel('Angle')
 plt.colorbar()
 plt.title('Policy Entropy')
 
-#plt.savefig('../figures/policy_entropy_omega_vs_angle.pdf')
-tikzplotlib.save('../figures/policy_entropy_omega_vs_angle_C.tex')
+tikzplotlib.save(os.path.join(figures_path, 'policy_entropy_omega_vs_angle_C.tex'))
+plt.show()
 
 
 #plt.subplot(2,2,4)
@@ -265,4 +270,4 @@ tikzplotlib.save('../figures/policy_entropy_omega_vs_angle_C.tex')
 #plt.title('Value STD')
 #plt.colorbar()
 
-plt.show()
+# plt.show()
