@@ -6,6 +6,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import argparse
 
+save_path = os.path.join(os.getcwd(), 'save_numpy')
+os.makedirs(save_path, exist_ok=True)
+figures_path = os.path.join(os.getcwd(), 'figures')
+os.makedirs(figures_path, exist_ok=True)
+
 retrain = False
 
 parser = argparse.ArgumentParser(description='Test for policy gradient')
