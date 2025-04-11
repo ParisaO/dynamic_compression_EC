@@ -70,18 +70,16 @@ sensor = Sensor(encoder, quantizer)
 dqn = RecDQN(latent_dim, latent_dim, env.action_space.n)
 dqn_target = RecDQN(latent_dim, latent_dim, env.action_space.n)
 
-for episode in trange(num_episodes, desc="Training episodes"):
-    dqn = rl_training_loop(env,
-                           dqn,
-                           dqn_target,
-                           sensor,
-                           num_episodes=1,
-                           batch_size=batch_size,
-                           gamma=0.97,
-                           exp_frac=exploring,
-                           target_net_update_steps=10,
-                           beta=0.5,
-                           num_codewords=num_codewords)
+dqn = rl_training_loop(env,
+                       dqn,
+                       dqn_target,
+                       sensor,
+                       num_episodes,
+                       batch_size,
+                       gamma=0.97,
+                       exp_frac=exploring,
+                       target_net_update_steps=10,
+                       beta = 0.5,
+                       num_codewords = num_codewords)
 
-
-torch.save(dqn.state_dict(), '../models/policy_' + str(num_codewords) + '.pt')
+torch.save(dqn.state_dict(), '../models/policy_'+str(num_codewords)+'.pt')
